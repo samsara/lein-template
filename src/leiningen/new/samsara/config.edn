@@ -1,0 +1,23 @@
+{:streams
+ [{:id           :ingestion
+   :input-topic  "ingestion"
+   :state        :partitioned
+   :output-topic "events"
+   :processor    "{{name}}.core/make-processor"
+   }]
+
+ :job
+ {:job-name "{{name}}"
+  ;; a CSV list of hosts and ports (and optional path)
+  :zookeepers "127.0.0.1:2181"
+  ;; a CSV list of host and ports of kafka brokers
+  :brokers "127.0.0.1:9092"
+  :offset :smallest
+  ;; this is useful only for local development
+  :samza-overrides { :task.checkpoint.replication.factor 1 }
+  }
+
+ :tracking {:enabled true :type :console
+            :reporting-frequency-seconds 600}
+
+ }
