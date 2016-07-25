@@ -18,6 +18,8 @@
     :else (assoc options :version RELEASE :docker-version RELEASE)))
 
 (defn validate-arguments
+  "Verifies that all template specific arguments supplied to the lein new command are valid options. Also checks to see
+   if there is both a --with-version and --with-snapshot, in which case it uses the --with-version option"
   [args]
   (let [opt-keys (keys args)]
     (when (every? (apply hash-set (map keyword SUPPORTED-OPTIONS)) opt-keys)
@@ -48,6 +50,6 @@
                  ["LICENSE"                          (render "LICENSE")]
                  ["doc/intro.md"                     (render "intro.md")]
                  [".gitignore"                       (render ".gitignore")]
-                 [".hgignore"                      (render ".hgignore")]
+                 [".hgignore"                        (render ".hgignore")]
                  "resources"))
       (apply main/info "Invalid arguments. The Samsara template supports the following arguments: " SUPPORTED-OPTIONS))))
