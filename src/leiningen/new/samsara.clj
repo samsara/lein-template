@@ -11,16 +11,6 @@
 
 (def render (renderer "samsara"))
 
-(defn validate-arguments
-  [args]
-  (cond
-    (not (every? (apply hash-set (map keyword SUPPORTED-OPTIONS)) (keys args)))
-    {:error (apply str "Invalid arguments. The Samsara template supports the following arguments: " (interpose ", " SUPPORTED-OPTIONS))}
-    (if-let [version (:--with-version args)]
-            (let [versions (:recent_versions (read-string (:body (http/get CLOJARS_URL {:accept :edn}))))]
-              (not (some #(= (:version %) version) versions))))
-    {:error "Invalid Samsara version."}))
-
 
 (defn sort-by-semantic-version [versions]
   (->> versions
@@ -52,6 +42,19 @@
   (let [latest (latest-version (samsara-versions) snapshot?)]
     (main/info "Samsara latest version:" latest)
     latest))
+
+
+
+(defn validate-arguments
+  [args]
+  (cond
+    (not (every? (apply hash-set (map keyword SUPPORTED-OPTIONS)) (keys args)))
+    {:error (apply str "Invalid arguments. The Samsara template supports the following arguments: " (interpose ", " SUPPORTED-OPTIONS))}
+    (if-let [version (:--with-version args)]
+      (let [versions (samsara-versions)]
+        (not (some #(= % version) versions))))
+    {:error "Invalid Samsara version."}))
+
 
 
 (defn parse-version

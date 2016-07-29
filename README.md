@@ -15,11 +15,11 @@ By default, the new project will use the latest stable release version
 of Samsara. If you wish to use a specific version, you can set the
 version by running:
 
-    lein new samsara <project-name> --with-version <version-number>
+    lein new samsara <project-name> -- --with-version <version-number>
 
 To use the latest release including snapshot, add the `--with-snapshot` argument:
 
-    lein new samsara <project-name> --with-snapshot
+    lein new samsara <project-name> -- --with-snapshot
 
 ## License
 
