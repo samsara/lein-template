@@ -57,10 +57,19 @@
 (defn parse-version
   [args options]
   (cond
-    (contains? args :--with-version) (assoc options :version (:--with-version args) :docker-version (:--with-version args))
-    (contains? args :--with-snapshot) (assoc options :version (samsara-latest-version true) :docker-version "snapshot")
+    (contains? args :--with-version) (assoc options
+                                            :version (:--with-version args)
+                                            :docker-version (:--with-version args)
+                                            :bootstrap-version (:--with-version args))
+    (contains? args :--with-snapshot) (assoc options
+                                             :version (samsara-latest-version true)
+                                             :docker-version "snapshot"
+                                             :bootstrap-version "master")
     :else (let [latest-release (samsara-latest-version false)]
-            (assoc options :version latest-release :docker-version latest-release))))
+            (assoc options
+                   :version latest-release
+                   :docker-version latest-release
+                   :bootstrap-version "master"))))
 
 
 (defn validate-and-parse-arguments
@@ -115,8 +124,9 @@
 
 
 (defn samsara
-  "A leinengen template to get you started with Samsara. Sets up a simple processor pipeline, required config files, and
-  a docker-compose file to get you up and running quickly."
+  "A leinengen template to get you started with Samsara. Sets up a
+  simple processor pipeline, required config files, and a
+  docker-compose file to get you up and running quickly."
   [name & options]
   (let [parsed (validate-and-parse-arguments (get (main/parse-options options) 0))]
     (if (not (:error parsed))
@@ -124,7 +134,8 @@
                   :sanitized      (name-to-path name)
                   :version        (:version parsed)
                   :docker-version (:docker-version parsed)
-                  :local-ip       (local-ip)}]
+                  :local-ip       (local-ip)
+                  :bootstrap-version (:bootstrap-version parsed)}]
         (headline)
         (main/info "Generating fresh Samsara project.")
         (->files data
