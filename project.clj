@@ -1,7 +1,7 @@
-(defproject samsara/lein-template "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject samsara/lein-template "0.1.0"
+  :description "Leiningen template for Samsara."
   :dependencies [[clj-http "2.2.0"]]
   :url "http://samsara-analytics.io/"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :license {:name "Apache License 2.0"
+            :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :eval-in-leiningen true)
