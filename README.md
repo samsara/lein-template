@@ -9,7 +9,7 @@ your project locally.
 
 To create a new Samsara project, run:
 
-    lein new samsara <project-name> --with-version <version-number>]
+    lein new samsara <project-name>
 
 By default, the new project will use the latest stable release version
 of Samsara. If you wish to use a specific version, you can set the
