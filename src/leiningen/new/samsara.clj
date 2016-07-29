@@ -2,7 +2,8 @@
   (:require [leiningen.new.templates :refer [renderer name-to-path ->files]]
             [leiningen.core.main :as main]
             [clj-http.client :as http]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.net NetworkInterface Inet4Address]))
 
 (def ^:const SUPPORTED-OPTIONS ["--with-snapshot" "--with-version"])
 
@@ -86,6 +87,33 @@
 -----------------------------------------------
 "))
 
+
+;;
+;; Detect local ip for docker-compose file
+;; credit: http://software-ninja-ninja.blogspot.co.uk/2013/05/clojure-what-is-my-ip-address.html
+;;
+(defn ip-filter [inet]
+  (and (.isUp inet)
+       (not (.isVirtual inet))
+       (not (.isLoopback inet))))
+
+
+(defn ip-extract [netinf]
+  (let [inets (enumeration-seq (.getInetAddresses netinf))]
+    (map #(vector (.getHostAddress %1) %2)
+         (filter #(instance? Inet4Address %) inets )
+         (repeat (.getName netinf)))))
+
+
+(defn ips []
+  (let [ifc (NetworkInterface/getNetworkInterfaces)]
+    (mapcat ip-extract (filter ip-filter (enumeration-seq ifc)))))
+
+
+(defn local-ip []
+  (or (ffirst (ips)) "ENTER_YOUR_IP"))
+
+
 (defn samsara
   "A leinengen template to get you started with Samsara. Sets up a simple processor pipeline, required config files, and
   a docker-compose file to get you up and running quickly."
@@ -95,7 +123,8 @@
       (let [data {:name           name
                   :sanitized      (name-to-path name)
                   :version        (:version parsed)
-                  :docker-version (:docker-version parsed)}]
+                  :docker-version (:docker-version parsed)
+                  :local-ip       (local-ip)}]
         (headline)
         (main/info "Generating fresh Samsara project.")
         (->files data
@@ -106,10 +135,11 @@
                  ["config/config.edn" (render "config.edn" data)]
                  ["docker-compose.yml" (render "docker-compose.yml" data)]
                  ["CHANGELOG.md" (render "CHANGELOG.md" data)]
+                 ["README.md" (render "README.md" data)]
                  ["LICENSE" (render "LICENSE")]
                  ["doc/intro.md" (render "intro.md")]
                  [".gitignore" (render ".gitignore")]
-                 #_[".hgignore" (render ".hgignore")] ;; missing
+                 [".hgignore" (render ".hgignore")]
                  "resources")
         (main/info "All done.\n")
         (main/info "To build and test:\n\t$ lein do clean, midje, bin")

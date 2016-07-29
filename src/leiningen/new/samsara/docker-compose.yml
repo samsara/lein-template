@@ -8,7 +8,7 @@ zookeeper:
     - "15001:15000"
   environment:
     ZK_SERVER_ID: 1
-    ADV_IP: "127.0.0.1"
+    ADV_IP: "{{local-ip}}"
   volumes:
     - /tmp/logs/zk1:/logs
     - /tmp/data/zk1:/data
@@ -25,7 +25,7 @@ kafka:
     - zookeeper:zookeeper
   environment:
     KAFKA_BROKER_ID: 1
-    ADV_IP: "127.0.0.1"
+    ADV_IP: "{{local-ip}}"
   volumes:
     - /tmp/logs/kafka1:/logs
     - /tmp/data/kafka1:/data
