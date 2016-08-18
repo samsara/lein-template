@@ -1,4 +1,4 @@
-(defproject samsara/lein-template "0.1.0"
+(defproject samsara/lein-template "0.2.0"
   :description "Leiningen template for Samsara."
   :dependencies [[clj-http "2.2.0"]]
   :url "http://samsara-analytics.io/"
