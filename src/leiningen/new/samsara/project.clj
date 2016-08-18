@@ -13,7 +13,7 @@
   :main {{name}}.main
 
   :profiles {:uberjar {:aot :all}
-             :dev     {:dependencies [[midje "1.7.0"]]
-                       :plugins      [[lein-midje "3.1.3"]
-                                      [lein-binplus "0.4.1"]]}}
+             :dev     {:dependencies [[midje "{{midje-version}}"]]
+                       :plugins      [[lein-midje "{{lein-midje-version}}"]
+                                      [lein-binplus "{{lein-binplus-version}}"]]}}
   )

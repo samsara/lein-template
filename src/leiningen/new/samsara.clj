@@ -7,27 +7,35 @@
 
 (def ^:const SUPPORTED-OPTIONS ["--with-snapshot" "--with-version"])
 
-(def ^:const CLOJARS_URL "https://clojars.org/api/artifacts/samsara/samsara-core")
+(def ^:const CLOJARS_URL "https://clojars.org/api/artifacts")
+
+(def ^:const SAMSARA-PKG      "samsara/samsara-core")
+(def ^:const MIDJE-PKG        "midje")
+(def ^:const LEIN-MIDJE-PKG   "lein-midje")
+(def ^:const LEIN-BINPLUS-PKG "lein-binplus")
+
 
 (def render (renderer "samsara"))
 
 
 (defn sort-by-semantic-version [versions]
   (->> versions
-       (map (partial re-find #"(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?(?:-(SNAPSHOT))?"))
-       (map (fn [[v a b c d sn]]
+       (map (partial re-find #"(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?(?:-(SNAPSHOT)|(.*))?"))
+       (filter identity)
+       (map (fn [[v a b c d sn alpha-beta]]
               (let [->int (fnil read-string "-1")]
-                [(->int a) (->int b) (->int c) (->int d) (not= sn "SNAPSHOT") v])))
+                [(->int a) (->int b) (->int c) (->int d) (not= sn "SNAPSHOT") alpha-beta v])))
        sort
        (map last)))
 
 
-(defn samsara-versions
-  []
-  (main/info "Searching for latest Samsara's version on Clojars.org ...")
-  (->> (read-string (:body (http/get CLOJARS_URL {:accept :edn})))
+(defn package-versions
+  [package]
+  (main/info "Searching for latest" package "version on Clojars.org ...")
+  (->> (read-string (:body (http/get (str CLOJARS_URL "/" package) {:accept :edn})))
        :recent_versions
        (map :version)))
+
 
 
 (defn latest-version
@@ -38,9 +46,9 @@
        last))
 
 
-(defn samsara-latest-version [snapshot?]
-  (let [latest (latest-version (samsara-versions) snapshot?)]
-    (main/info "Samsara latest version:" latest)
+(defn latest-version-of [package snapshot?]
+  (let [latest (latest-version (package-versions package) snapshot?)]
+    (main/info "Latest" package "version:" latest)
     latest))
 
 
@@ -51,7 +59,7 @@
     (not (every? (apply hash-set (map keyword SUPPORTED-OPTIONS)) (keys args)))
     {:error (apply str "Invalid arguments. The Samsara template supports the following arguments: " (interpose ", " SUPPORTED-OPTIONS))}
     (if-let [version (:--with-version args)]
-      (let [versions (samsara-versions)]
+      (let [versions (package-versions SAMSARA-PKG)]
         (not (some #(= % version) versions))))
     {:error "Invalid Samsara version."}))
 
@@ -65,10 +73,10 @@
                                             :docker-version (:--with-version args)
                                             :bootstrap-version (:--with-version args))
     (contains? args :--with-snapshot) (assoc options
-                                             :version (samsara-latest-version true)
+                                             :version (latest-version-of SAMSARA-PKG true)
                                              :docker-version "snapshot"
                                              :bootstrap-version "master")
-    :else (let [latest-release (samsara-latest-version false)]
+    :else (let [latest-release (latest-version-of SAMSARA-PKG false)]
             (assoc options
                    :version latest-release
                    :docker-version latest-release
@@ -138,7 +146,10 @@
                   :version        (:version parsed)
                   :docker-version (:docker-version parsed)
                   :local-ip       (local-ip)
-                  :bootstrap-version (:bootstrap-version parsed)}]
+                  :bootstrap-version (:bootstrap-version parsed)
+                  :midje-version  (latest-version-of MIDJE-PKG false)
+                  :lein-midje-version (latest-version-of LEIN-MIDJE-PKG false)
+                  :lein-binplus-version (latest-version-of LEIN-BINPLUS-PKG false)}]
         (headline)
         (main/info "Generating fresh Samsara project.")
         (->files data
